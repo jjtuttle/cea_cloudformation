@@ -4,9 +4,15 @@ Resources:
   MyVPC:
     Type: 'AWS::EC2::VPC'
     Properties:
-      CiderBlock: '172.16.0.0/16'
+      CidrBlock: '172.16.0.0/16'
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
-        -Key: Name
-        Value: 'MyVpc'
+        - Key: Name
+          Value: 'MyVpc'
+
+
+#        
+# {
+#     "StackId": "arn:aws:cloudformation:us-west-2:174350032342:stack/vpc-stack/7b829f30-2b88-11f0-8e61-060a516a15d7"
+# }
