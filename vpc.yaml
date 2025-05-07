@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for VPC - my first yaml file!!!'
+
 Resources:
+# My VPC
   MyVPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -10,7 +12,7 @@ Resources:
       Tags:
         - Key: Name
           Value: 'MyVpc'
-
+# Public Subnet in AZ 1
   PublicSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -21,7 +23,7 @@ Resources:
       Tags:
         - Key: Name
           Value: PublicSubnet1A
-
+# App Private Subnet in AZ 1
   AppPrivateSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -31,7 +33,7 @@ Resources:
       Tags:
         - Key: name
           Value: AppPrivateSubnet1A
-
+# Data Private Subnet in AZ 1
   DataPrivateSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -41,5 +43,35 @@ Resources:
       Tags:
       - KEY: name
         Value: DataPrivateSubnet1A
-
-
+# Private Subnet in AZ 2
+  PublicSubnet1B:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: MyVPC
+      CidrBlock: '172.16.4.0/24'
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2B
+  # App Private Subnet in AZ 2
+  AppPrivateSubnet2B:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '172.16.5.0/24'
+      AvailabilityZone: !Select [1, !GetAZs, '']
+      Tags:
+        - Key: Name
+          Value: AppPrivateSubnet2B
+# Data Private Subnet in AZ 2
+  DataPrivateSubnet2B:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: MyVPC
+      CidrBlock: '172.16.6.9/24'
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: DataPrivateSubnet2B
+      
