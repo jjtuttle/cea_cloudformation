@@ -11,14 +11,14 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: 'MyVpc'
+          Value: 'MyVPC'
 # Public Subnet in AZ 1
   PublicSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: !Ref MyVpc
+      VpcId: !Ref MyVPC
       CidrBlock: '172.16.1.0/24'
-      AvailabilityZone: !Select [0, !GetAzs '']
+      AvailabilityZone: !Select [0, !GetAZs '']
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -29,9 +29,9 @@ Resources:
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: '172.16.2.0/24'
-      AvailabilityZone: !Select [0, GetAZs '']
+      AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
-        - Key: name
+        - Key: Name
           Value: AppPrivateSubnet1A
 # Data Private Subnet in AZ 1
   DataPrivateSubnet1A:
@@ -41,13 +41,13 @@ Resources:
       CidrBlock: '172.16.3.0/24'
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
-      - KEY: name
-        Value: DataPrivateSubnet1A
+        - Key: Name
+          Value: DataPrivateSubnet1A
 # Private Subnet in AZ 2
-  PublicSubnet1B:
+  PublicSubnet2B:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: MyVPC
+      VpcId: !Ref MyVPC
       CidrBlock: '172.16.4.0/24'
       AvailabilityZone: !Select [1, !GetAZs '']
       MapPublicIpOnLaunch: true
@@ -60,7 +60,7 @@ Resources:
     Properties:
       VpcId: !Ref MyVPC
       CidrBlock: '172.16.5.0/24'
-      AvailabilityZone: !Select [1, !GetAZs, '']
+      AvailabilityZone: !Select [1, !GetAZs '']
       Tags:
         - Key: Name
           Value: AppPrivateSubnet2B
@@ -68,8 +68,8 @@ Resources:
   DataPrivateSubnet2B:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: MyVPC
-      CidrBlock: '172.16.6.9/24'
+      VpcId: !Ref MyVPC
+      CidrBlock: '172.16.6.0/24'
       AvailabilityZone: !Select [1, !GetAZs '']
       Tags:
         - Key: Name
