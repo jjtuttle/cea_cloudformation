@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFormation template for VPC'
+Description: 'CloudFormation template for VPC - my first yaml file!!!'
 Resources:
   MyVPC:
     Type: 'AWS::EC2::VPC'
@@ -11,8 +11,35 @@ Resources:
         - Key: Name
           Value: 'MyVpc'
 
+  PublicSubnet1A:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVpc
+      CidrBlock: '172.16.1.0/24'
+      AvailabilityZone: !Select [0, !GetAzs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet1A
 
-#        
-# {
-#     "StackId": "arn:aws:cloudformation:us-west-2:174350032342:stack/vpc-stack/7b829f30-2b88-11f0-8e61-060a516a15d7"
-# }
+  AppPrivateSubnet1A:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '172.16.2.0/24'
+      AvailabilityZone: !Select [0, GetAZs '']
+      Tags:
+        - Key: name
+          Value: AppPrivateSubnet1A
+
+  DataPrivateSubnet1A:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '172.16.3.0/24'
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+      - KEY: name
+        Value: DataPrivateSubnet1A
+
+
