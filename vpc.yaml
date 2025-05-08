@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for VPC - my first yaml file!!!'
 
 Resources:
-# My VPC
+  # My VPC
   MyVPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -11,8 +11,8 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: 'MyVPC'
-# Public Subnet in AZ 1
+          Value: MyVPC
+  # Public Subnet in AZ 1
   PublicSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -23,7 +23,7 @@ Resources:
       Tags:
         - Key: Name
           Value: PublicSubnet1A
-# App Private Subnet in AZ 1
+  # App Private Subnet in AZ 1
   AppPrivateSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -33,7 +33,7 @@ Resources:
       Tags:
         - Key: Name
           Value: AppPrivateSubnet1A
-# Data Private Subnet in AZ 1
+  # Data Private Subnet in AZ 1
   DataPrivateSubnet1A:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -43,7 +43,7 @@ Resources:
       Tags:
         - Key: Name
           Value: DataPrivateSubnet1A
-# Private Subnet in AZ 2
+  # Private Subnet in AZ 2
   PublicSubnet2B:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -54,6 +54,7 @@ Resources:
       Tags:
         - Key: Name
           Value: PublicSubnet2B
+
   # App Private Subnet in AZ 2
   AppPrivateSubnet2B:
     Type: 'AWS::EC2::Subnet'
@@ -64,7 +65,7 @@ Resources:
       Tags:
         - Key: Name
           Value: AppPrivateSubnet2B
-# Data Private Subnet in AZ 2
+  # Data Private Subnet in AZ 2
   DataPrivateSubnet2B:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -74,4 +75,50 @@ Resources:
       Tags:
         - Key: Name
           Value: DataPrivateSubnet2B
-      
+          
+  # Internet Gateway
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MyVPC-IGW
+
+  #Attach Internet Gateway to VPC
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  # Public Route Table
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref MyVPC
+      Tags:
+        - Key: Name
+          Value: PublicRouteTable
+
+  # Public Routes
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  # Public Subnet 1A Route Table Associations
+  PublicSubnet1ARouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1A
+      RouteTableId: !Ref PublicRouteTable
+
+  # Public Subnet 2B Route Table Associations
+  PublicSubnet2BRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet2B
+      RouteTableId: !Ref PublicRouteTable
