@@ -1,5 +1,27 @@
 {
-    "cSpell.words": [
-        "TUTTLE"
+  "cSpell.words": ["TUTTLE"],
+  "yaml.customTags": [
+    "!Ref",
+    "!GetAZs",
+    "!Sub",
+    "!GetAtt",
+    "!Join",
+    "!Select",
+    "!If",
+    "!Equals",
+    "!ImportValue",
+    "!Condition",
+    "!And",
+    "!Or",
+    "!Not",
+    "!Base64"
+  ],
+  "yaml.validate": true,
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/awslabs/goformation/master/schema/cloudformation.schema.json": [
+      "template.yaml",
+      "template.yml",
+      "cloudformation/*.yaml"
     ]
+  }
 }
