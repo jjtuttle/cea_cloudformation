@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFormation template for EC2 and Load Balancer'
+Description: 'CloudFormation template for EC2 , Auto scaling in a launch config'
 
 Resources:
   # My VPC
@@ -123,42 +123,6 @@ Resources:
       SubnetId: !Ref PublicSubnet2B
       RouteTableId: !Ref PublicRouteTable
 
-  #########################################################
-  # Load Balancer
-  #########################################################
-
-  # Application Load Balancer
-  MyLoadBalancer:
-    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
-    Properties:
-      Subnets:
-        - !Ref PublicSubnet1A
-        - !Ref PublicSubnet2B
-      SecurityGroups:
-        - !Ref WebServerSecurityGroup
-
-  # Target Group for ALB
-  MyTargetGroup:
-    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
-    Properties:
-      VpcId: !Ref MyVPC
-      Port: 80
-      Protocol: 'HTTP'
-      Targets:
-        - Id: !Ref WebServerInstance1A
-        - Id: !Ref WebServerInstance2B
-
-  # Listener for ALB
-  MyListener:
-    Type: 'AWS::ElasticLoadBalancingV2::Listener'
-    Properties:
-      DefaultActions:
-        - Type: 'forward'
-          TargetGroupArn: !Ref MyTargetGroup
-      LoadBalancerArn: !Ref MyLoadBalancer
-      port: 80
-      Protocol: 'HTTP'
-
   # Security Group for WebServerInstances
   WebServerSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -171,42 +135,63 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
 
-  # WebServerInstance1A
-  WebServerInstance1A:
-    Type: 'AWS::EC2::Instance'
+  # Launch Config
+  MyLaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
     Properties:
-      InstanceType: 't2.micro'
-      ImageId: ami-07b0c09aab6e66ee9
-      SubnetId: !Ref PublicSubnet1A
-      SecurityGroupIds:
+      LaunchTemplateName: MyLaunchTemplate
+      LaunchTemplateData:
+        ImageId: ami-07b0c09aab6e66ee9
+        InstanceType: t2.micro
+        SecurityGroupIds:
         - !Ref WebServerSecurityGroup
-      Tags:
-        - Key: Name
-          Value: WebServerInstance1A
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          echo "<h1>Hello World from $(hostname -f) - TUTTLE </h1>" > /var/www/html/index.html
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum install -y httpd
+            systemctl start httpd
+            systemctl enable httpd
+            echo "Hello from auto scaling instance..." > /var/www/html/index.html
 
-  # WebServerInstance2B
-  WebServerInstance2B:
-    Type: 'AWS::EC2::Instance'
+  # Auto Scaling Group
+  MyAutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      InstanceType: 't2.micro'
-      ImageId: ami-07b0c09aab6e66ee9
-      SubnetId: !Ref PublicSubnet2B
-      SecurityGroupIds:
-        - !Ref WebServerSecurityGroup
-      Tags:
-        - Key: Name
-          Value: WebServerInstance2B
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          yum install -y httpd
-          systemctl start httpd
-          systemctl enable httpd
-          echo "<h1>Hello World from $(hostname -f) - TUTTLE </h1>" > /var/www/html/index.html  
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MyLaunchTemplate
+        Version: !GetAtt MyLaunchTemplate.LatestVersionNumber
+      MinSize: 1
+      MaxSize: 3
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1A
+        - !Ref PublicSubnet2B
+
+
+  # Alarm
+  HighCPUAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: 'Alarm when CPU exceeds 70%'
+      MetricName: 'CPUUtilization'
+      Namespace: 'AWS/EC2'
+      Statistic: 'Average'
+      Period: '300'
+      EvaluationPeriods: 1
+      Threshold: '70'
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value: !Ref MyAutoScalingGroup
+      AlarmActions:
+        - !Ref ScaleOutPolicy
+
+  # Scale Out Policy
+  ScaleOutPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AutoScalingGroupName: !Ref MyAutoScalingGroup
+      PolicyType: 'SimpleScaling'
+      ScalingAdjustment: '1'
+      Cooldown: '300'
+      AdjustmentType: 'ChangeInCapacity'
